@@ -1,0 +1,104 @@
+Dim adoconn As New ADODB.Connection
+Dim rs As New ADODB.Recordset
+
+____________________________________________________________________________________________________________
+Private Sub cmdDelete_Click()
+
+    Dim ans As String, str As String
+    ans = MsgBox("Do you really want to delete the current record?", vbExclamation + vbYesNo, "DELETE")
+    If ans = vbYes Then
+        adoconn.Execute ("delete from library where book_id=" & Text1.Text)
+        MsgBox ("The record has been deleted successfully.")
+        Set rs = Nothing
+        str = "select * from library"
+        rs.Open str, adoconn, adOpenDynamic, adLockPessimistic
+        rs.MoveFirst
+        Text1.Text = rs.Fields(0)
+        Text2.Text = rs.Fields(1)
+        Text3.Text = rs.Fields(2)
+        Text4.Text = rs.Fields(3)
+    End If
+    
+End Sub
+___________________________________________________________________________________________________________________
+
+Private Sub cmdSearch_Click()
+
+    Dim key As String, str As String
+    key = InputBox("ENTER THE BOOK-ID WHOSE DETAILS YOU WANT TO KNOW : ")
+    If IsNumeric(key) Then
+        key = CInt(key)
+        Set rs = Nothing
+        str = "select * from library where book_id=" & key
+        rs.Open str, adoconn, adOpenForwardOnly, adLockReadOnly
+        If Not rs.EOF Then
+        Text1.Text = rs.Fields(0)
+        Text2.Text = rs.Fields(1)
+        Text3.Text = rs.Fields(2)
+        Text4.Text = rs.Fields(3)
+        Else
+            MsgBox "NO RECORDS WHERE FOUND FOR THAT BOOK ID."
+        End If
+    Else
+        MsgBox "BOOK ID MUST BE NUMERIC."
+    End If
+    
+    Set rs = Nothing
+    str = "select * from library"
+    rs.Open str, adoconn, adOpenDynamic, adLockPessimistic
+    
+End Sub
+___________________________________________________________________________________________________________________
+
+Private Sub cmdUpdate_Click()
+    Dim ans As String
+    ans = MsgBox("Do you really want to modify the current record?", vbExclamation + vbYesNo, "DELETE")
+    If ans = vbYes Then
+        Text1.Locked = True
+        Text2.Locked = False
+        Text3.Locked = False
+        Combo1.Locked = False
+        rs.UPDATE
+        
+        cmdSearch.Enabled = False
+        cmdUpdate.Enabled = False
+        cmdSave.Visible = True
+        cmdExit.Enabled = False
+                
+    End If
+End Sub
+___________________________________________________________________________________________________________________
+
+Private Sub cmdSave_Click()
+    rs.Fields(1) = Text2.Text
+    rs.Fields(2) = Text3.Text
+    rs.UPDATE
+    MsgBox "The record has been saved successfully.", , "ADD"
+        
+    Text1.Locked = True
+    Text2.Locked = True
+    Text3.Locked = True
+    Combo1.Locked = True
+    
+    cmdSearch.Enabled = True
+    cmdUpdate.Enabled = True
+    cmdSave.Visible = False
+    cmdExit.Enabled = True
+           
+End Sub
+___________________________________________________________________________________________________________________
+Private Sub Form_Load()
+
+    Dim str As String
+    Me.Caption = "LIBRARY DATABASE"
+    Set adoconn = Nothing
+    adoconn.Open "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=Database11.mdb;Persist Security Info=False"
+    str = "select * from library"
+    rs.Open str, adoconn, adOpenDynamic, adLockPessimistic
+    rs.MoveFirst
+        Text1.Text = rs.Fields(0)
+        Text2.Text = rs.Fields(1)
+        Text3.Text = rs.Fields(2)
+        Text4.Text = rs.Fields(3)
+    
+End Sub
